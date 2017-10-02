@@ -1,46 +1,30 @@
 
-body {
-
-    margin: 1em;
-    
-    font-size: 12px;
-
-    /* Copied from Premiere with "Digital Color Meter" */
-    background: #272822;
-    color: #B9B9B9;
-
+html {
+    font-size: 62.5%
 }
+
+body {
+    font-size: 16px;
+    font-size: 1.6rem;
+    font-family: "San Francisco", "Helvetica Neue", "Lucida Grande", "Segoe UI";
+    color: rgb(240, 240, 240);
+    background: rgb(83, 83, 83);
+    margin: 0;
+    padding: 5px;
+}
+
 
 h1 {
     font-size: 16px;
     margin: 0;
 }
 
-.well {
-    background: #262626;
-    border-color: #313131;
-}
-
 .btn.btn-default {
-    background: #5C5C5C;
+    background: #666;
     color: white;
 }
 
 
 .float-right {
     float: right;
-}
-
-
-#dev-console {
-    background: white;
-    color: black;
-    font-family: Monaco;
-    white-space: pre;
-    margin: 1em 0;
-    padding: 0.5ex;
-}
-
-#import-form input {
-    width: 300px;
 }
