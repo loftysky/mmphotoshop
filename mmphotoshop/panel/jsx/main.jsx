@@ -31,23 +31,23 @@
             return
         }
 
-        var panelsExported = 0
-        var spritesExported = 0
-        var metadata = {
-            application: {
-                name: app.name,
-                version: app.version
-            },
-            document: {
-                path: doc.path.fullName,
-                width: doc.width.as('px'),
-                height: doc.height.as('px')
-            },
-            panels: []
-        }
-
         try {
 
+            var panelsExported = 0
+            var spritesExported = 0
+            var metadata = {
+                application: {
+                    name: app.name,
+                    version: app.version
+                },
+                document: {
+                    path: doc.path.fullName,
+                    width: doc.width.as('px'),
+                    height: doc.height.as('px')
+                },
+                panels: []
+            }
+            
             // var history = doc.activeHistoryState
             var visibility = []
             var layers = doc.layers
@@ -193,7 +193,8 @@
         var options = new PNGSaveOptions()
         options.compression = 1;
 
-        var pngPath = dir + '/' + name + '.png'
+        var pngName = name + '.png'
+        var pngPath = dir + '/' + pngName
         M.log(pngPath)
 
         var pngFile = new File(pngPath)
@@ -202,10 +203,11 @@
         doc.activeHistoryState = history
 
         return {
-            top:    Math.round(top),
-            right:  Math.round(right),
-            bottom: Math.round(bottom),
-            left:   Math.round(left)
+            fileName: pngName,
+            top:      Math.round(top),
+            right:    Math.round(right),
+            bottom:   Math.round(bottom),
+            left:     Math.round(left)
         }
 
     }

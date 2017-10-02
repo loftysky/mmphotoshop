@@ -29,7 +29,8 @@
 					</CEFCommandLine>
 				</Resources>
 				<Lifecycle>
-					<AutoVisible>false</AutoVisible>
+					<!-- Has to be true for Windows, aparently. -->
+					<AutoVisible>true</AutoVisible>
 				</Lifecycle>
 				<UI>
 					<Type>Panel</Type>
