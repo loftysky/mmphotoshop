@@ -2,14 +2,15 @@
 var log = function() {
 
     var args = Array.prototype.slice.call(arguments)
-    var msg = "[mmphotoshop] " + args.join(" ")
+    var msg = "[MM] " + args.join(" ")
     console.log(msg)
     
 }
 
-var mmphotoshop = (function() {
+var MM = (function() {
 
     log('Starting main.js')
+
 
     var M = {}
     M.log = log
@@ -35,12 +36,12 @@ var mmphotoshop = (function() {
         if (M.devMode) {
             log("Starting runtime in devMode.")
             proc = spawn('/bin/bash', [
-                '-lc', 'dev python -m mmproject52x2.premiere.runtime'
+                '-lc', 'dev python -m adobetools.cep.runtime'
             ])
         } else {
             log("Starting runtime.")
             proc = spawn('/bin/bash', [
-                '-lc', 'python -m mmproject52x2.premiere.runtime'
+                '-lc', 'python -m adobetools.cep.runtime'
             ])
         }
         
@@ -164,6 +165,13 @@ var mmphotoshop = (function() {
 
     }
 
+    M.loadJSX = function(name) {
+        var csInterface = new CSInterface();
+        var dir_ = csInterface.getSystemPath(SystemPath.EXTENSION) + '/jsx/'
+        var path = dir_ + name
+        M.log('Loading: ' + path)
+        csInterface.evalScript('$.MM.load("' + path + '")');
+    }
 
     M.callJSX = function(funcName, args, callback) {
         var encodedArgs = []
@@ -178,7 +186,7 @@ var mmphotoshop = (function() {
             try {
                 res = res ? JSON.parse(res) : null;
             } catch (e) {
-                M.log('WARNING: Response was not JSON.')
+                M.log('WARNING: Response was not JSON: ' + (res || '<null>'))
             }
             if (callback) {
                 callback(res)
@@ -187,8 +195,11 @@ var mmphotoshop = (function() {
     }
 
     M.callOurJSX = function(funcName, args, callback) {
-        M.callJSX('$._mmphotoshop.' + funcName, args, callback)
+        M.callJSX('$.MM.' + funcName, args, callback)
     }
+
+    M.loadJSX('lib/json2.js')
+    M.loadJSX('main.jsx')
 
     return M;
 

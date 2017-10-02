@@ -21,7 +21,7 @@
 			<DispatchInfo >
 				<Resources>
 					<MainPath>./index.html</MainPath>
-					<ScriptPath>./jsx/main.jsx</ScriptPath>
+					<ScriptPath>./jsx/bootstrap.jsx</ScriptPath>
 					<CEFCommandLine>
 						<Parameter>--allow-file-access</Parameter>
 						<Parameter>--allow-file-access-from-files</Parameter>
@@ -29,7 +29,7 @@
 					</CEFCommandLine>
 				</Resources>
 				<Lifecycle>
-					<AutoVisible>true</AutoVisible>
+					<AutoVisible>false</AutoVisible>
 				</Lifecycle>
 				<UI>
 					<Type>Panel</Type>

@@ -2,7 +2,9 @@
 <ExtensionList>
     <Extension Id="com.testing.it">
         <HostList>
-           <Host Name="PPRO" Port="8099"/> 
+           <Host Name="PPRO" Port="9001"/> 
+           <Host Name="PHSP" Port="9002"/> 
+           <Host Name="PHXS" Port="9003"/> 
         </HostList>
     </Extension>
 </ExtensionList>

@@ -49,5 +49,5 @@ jQuery(function(J) {
 })
 
 
-})(mm52x2)
+})(MM)
 

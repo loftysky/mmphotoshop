@@ -1,6 +1,6 @@
 jQuery(function(J) {
 
-    var M = mm52x2;
+    var M = MM;
 
     var devModeToggle = $('#dev-mode-toggle')
     var devControls = $('#dev-controls')

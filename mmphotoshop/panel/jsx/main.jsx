@@ -1,117 +1,92 @@
 
-if ($ === undefined) {
-    $ = {}
-}
 
-$._mm52x2 = (function() {
+(function() {
 
-    var M = {}
 
-    var TYPE_ROOT = 3
-    var TYPE_BIN = 2
-    var TYPE_CLIP = 1 // Clip or sequence.
+    var M = $.MM
 
-    var getItem = function(name, node) {
-        var parts = name.split(/[\/\\]/)
-        node = node || app.project.rootItem
-        for (var i = 0; i < parts.length; i++) {
-            var part = parts[i]
-            if (!part.length) {
-                continue
+    M.log("Defining module.")
+
+    M.exportPanels = function() {
+        M.log("exportPanels()")
+        app.doProgress("Exporting panels...", '$.MM._exportPanels()')
+    }
+
+    var _exportPanel = function(doc, set) {
+
+        var beforeFlatten = doc.activeHistoryState
+        var name = set.name;
+
+        set.visible = true
+        doc.flatten()
+
+        var jpeg = new JPEGSaveOptions()
+        jpeg.embedColorProfile = true;
+        jpeg.formatOptions = FormatOptions.STANDARDBASELINE
+        jpeg.matte = MatteType.NONE
+        jpeg.quality = 12
+
+        var path = '/Volumes/CGroot/home/mikeb/Desktop/psd,' + name + '.jpg'
+        M.log(path)
+
+        var file = new File(path)
+        doc.saveAs(file, jpeg, true, Extension.LOWERCASE)
+        
+        doc.activeHistoryState = beforeFlatten
+        set.visible = false // History doesn't include visibility by default.
+
+    }
+
+    M._exportPanels = function() {
+
+        M.log('_exportPanels()')
+        
+        try {
+            var doc = app.activeDocument
+        } catch (e) {
+            alert('No active document.')
+            return
+        }
+
+        try {
+
+            var originalHistory = doc.activeHistoryState
+            var originalVisibility = []
+
+            // Hide everything.
+            for (i = 0; i < doc.layers.length; i++) {
+                var layer = doc.layers[i];
+                originalVisibility.push(layer.visible);
+                layer.visible = false;
             }
-            var children = node.children
-            var numItems = children.numItems
-            var found = false
-            for (var j = 0; j < numItems; j++) {
-                var child = children[j]
-                if (child.name == part) {
-                    found = true
-                    node = child
-                    break
+
+            M.log('Looking for "panel##" layer sets.')
+            for (i = 0; i < doc.layerSets.length; i++) {
+
+                if (!app.updateProgress(i, doc.layerSets.length)) {
+                    return
                 }
+
+                var set = doc.layerSets[i]
+                var m = /^[Pp]anel[0-9]+$/.exec(set.name)
+                if (!m) {
+                    continue
+                }
+                _exportPanel(doc, set)
             }
-            if (!found) {
-                return
+
+        } catch (e) {
+            alert(e)
+        } finally {
+
+            M.log('Reverting...')
+            doc.activeHistoryState = originalHistory
+            for (i = 0; i < originalVisibility.length; i++) {
+                doc.layers[i].visible = originalVisibility[i];
             }
-        }
-    }
 
-    var walk = function(func, item, depth) {
-        item = item || app.project.rootItem
-        depth = depth || 0
-        func(item, depth)
-        var children = item.children
-        var numItems = children ? children.numItems : 0
-        for (var i = 0; i < numItems; i++) {
-            var child = children[i]
-            if (child) {
-                walk(func, child, depth + 1)
-            }
-        }
-    }
-
-    M.importImages = function(images, binName) {
-
-        var bin = app.project.rootItem.createBin(binName);
-
-        for (var i = 0; i < images.length; i++) {
-            // We still need to do them one at a time.
-            app.project.importFiles(
-                [images[i]],
-                0, // Don't silence errors.
-                bin,
-                1, // As image sequences.
-            ); 
         }
 
     }
-
-    M.getAllFootage = function() {
-
-        var res = {}
-
-        walk(function(node, depth) {
-            
-            if (node.type != TYPE_CLIP) {
-                return
-            }
-            if (!node.canChangeMediaPath()) {
-                return
-            }
-
-            var nodePath = node.treePath.replace(/\\/g, '/')
-            var xml = node.getProjectMetadata();
-            var m = /<premierePrivateProjectMetaData:Column\.Intrinsic\.FilePath>(.*?)<\//.exec(xml)
-            if (m) {
-                var filePath = m[1]
-                res[nodePath] = filePath
-            }
-        })
-
-        return res
-
-    }
-
-    M.replaceFootage = function(replacements) {
-
-        var count = 0
-
-        walk(function(node) {
-
-            var nodePath = node.treePath.replace(/\\/g, '/')
-            var filePath = replacements[nodePath]
-            $.writeln(nodePath + ' ' + filePath)
-            if (filePath && node.canChangeMediaPath()) {
-                count++
-                node.changeMediaPath(filePath)
-            }
-
-        })
-
-        return count
-
-    }
-
-    return M
 
 })()

@@ -3,8 +3,7 @@
 
 M.import = function(glob, binName) {
 
-    M.log("BLAH")
-    alert('here')
+    M.callOurJSX('exportPanels')
 
 /*
     M.send({'type': 'call', 'func': 'mmproject52x2.render.locate:by_glob', 'args': [glob]}, function(res) {
@@ -50,4 +49,4 @@ jQuery(function(J) {
 })
 
 
-})(mmphotoshop)
+})(MM)
