@@ -33,6 +33,18 @@
 
         var panelsExported = 0
         var spritesExported = 0
+        var metadata = {
+            application: {
+                name: app.name,
+                version: app.version
+            },
+            document: {
+                path: doc.path.fullName,
+                width: doc.width.as('px'),
+                height: doc.height.as('px')
+            },
+            panels: []
+        }
 
         try {
 
@@ -62,10 +74,20 @@
                 }
 
                 set.visible = true
-                spritesExported += _exportPanel(doc, dir, set)
-                panelsExported++
+                var panelMeta = _exportPanel(doc, dir, set)
+                metadata.panels.push(panelMeta)
                 set.visible = false
+
+                spritesExported += (panelMeta.sprites || []).length || 1
+                panelsExported++
             }
+
+
+            var metaPath = dir + '/metadata.json'
+            var metaFile = new File(metaPath)
+            metaFile.open('w')
+            metaFile.write(JSON.stringify(metadata))
+            metaFile.close()
 
         } catch (e) {
             alert(e)
@@ -99,6 +121,11 @@
         var layers = set.layers;
         var visibility = []
 
+        var metadata = {
+            name: set.name,
+            sprites: [],
+        }
+
         try {
 
             var spriteCount = 0
@@ -124,12 +151,16 @@
                 for (var i = 0; i < layers.length; i++) {
                     var layer = layers[i]
                     layer.visible = true;
-                    _exportSprite(doc, dir, set.name + '_' + layer.name)
+                    var spriteMeta = _exportSprite(doc, dir, set.name + '_' + layer.name)
+                    spriteMeta.name = layer.name
+                    metadata.sprites.push(spriteMeta)
                     layer.visible = false;
                 }
 
             } else {
-                _exportSprite(doc, dir, set.name)
+                var panelMeta = _exportSprite(doc, dir, set.name)
+                panelMeta.name = null;
+                metadata.sprites.push(panelMeta)
             }
 
         } finally {
@@ -140,7 +171,7 @@
 
         }
 
-        return spriteCount || 1
+        return metadata
 
     }
 
@@ -168,18 +199,15 @@
         var pngFile = new File(pngPath)
         doc.saveAs(pngFile, options, true, Extension.LOWERCASE)
 
-        var metaPath = dir + '/' + name + '.json'
-        var metaFile = new File(metaPath)
-        metaFile.open('w')
-        metaFile.write(JSON.stringify({
-            top: top,
-            right: right,
-            bottom: bottom,
-            left: left
-        }))
-        metaFile.close()
-
         doc.activeHistoryState = history
+
+        return {
+            top:    Math.round(top),
+            right:  Math.round(right),
+            bottom: Math.round(bottom),
+            left:   Math.round(left)
+        }
+
     }
 
 
