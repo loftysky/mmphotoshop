@@ -146,15 +146,40 @@
 
     var _exportSprite = function(doc, dir, name) {
 
+        var history = doc.activeHistoryState
+
+        var px = function(x) { return x.as('px') }
+
+        var width = px(doc.width)
+        var height = px(doc.height)
+        doc.trim(TrimType.TRANSPARENT, true, true, false, false)
+        var top = height - px(doc.height)
+        var left = width - px(doc.width)
+        doc.trim(TrimType.TRANSPARENT, false, false, true, true)
+        var bottom = height - top - px(doc.height)
+        var right = width - left - px(doc.width)
+
         var options = new PNGSaveOptions()
         options.compression = 1;
 
-        var path = dir + '/' + name + '.png'
-        M.log(path)
+        var pngPath = dir + '/' + name + '.png'
+        M.log(pngPath)
 
-        var file = new File(path)
-        doc.saveAs(file, options, true, Extension.LOWERCASE)
+        var pngFile = new File(pngPath)
+        doc.saveAs(pngFile, options, true, Extension.LOWERCASE)
 
+        var metaPath = dir + '/' + name + '.json'
+        var metaFile = new File(metaPath)
+        metaFile.open('w')
+        metaFile.write(JSON.stringify({
+            top: top,
+            right: right,
+            bottom: bottom,
+            left: left
+        }))
+        metaFile.close()
+
+        doc.activeHistoryState = history
     }
 
 
