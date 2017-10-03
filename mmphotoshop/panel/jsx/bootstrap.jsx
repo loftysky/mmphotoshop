@@ -34,7 +34,7 @@ $.MM = (function() {
             M._imports[path] = x
             return x
         } catch (e) {
-            alert(e)
+            alert(e.toString() + " (from " + e.fileName + "[" + e.line + "])")
         }
 
     }

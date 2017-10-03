@@ -7,6 +7,12 @@
 
     M.log("Defining module.")
 
+    var pad = function(n, width, z) {
+        z = z || '0'
+        n = n + ''
+        return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n
+    }
+
     M.exportPanels = function() {
 
         M.log("exportPanels()")
@@ -34,29 +40,33 @@
         try {
 
             var panelsExported = 0
+            var panelsSeen = {}
             var spritesExported = 0
+
             var metadata = {
                 application: {
                     name: app.name,
                     version: app.version
                 },
                 document: {
-                    path: doc.path.fullName,
+                    path: doc.path.fullName + '/' + doc.name, // This is wierd.
                     width: doc.width.as('px'),
                     height: doc.height.as('px')
                 },
+                path: dir,
                 panels: []
             }
             
+
             // var history = doc.activeHistoryState
             var visibility = []
             var layers = doc.layers
 
             // Hide everything.
             for (i = 0; i < layers.length; i++) {
-                var layer = layers[i];
-                visibility.push(layer.visible);
-                layer.visible = false;
+                var layer = layers[i]
+                visibility.push(layer.visible)
+                layer.visible = false
             }
 
             M.log('Looking for "panel##" layer sets.')
@@ -68,20 +78,32 @@
 
                 var set = doc.layerSets[i]
                 
-                var m = /^[Pp]anel[0-9]+$/.exec(set.name)
+                var m = /^[Pp]anel([0-9])+$/.exec(set.name)
                 if (!m) {
                     continue
                 }
+                var n = parseInt(m[1], 10)
+                if (panelsSeen[n]) {
+                    throw "Multiple panel" + pad(n, 2)
+                }
+                panelsSeen[n] = true
 
                 set.visible = true
+
                 var panelMeta = _exportPanel(doc, dir, set)
+                panelMeta.rawIndex = i
+                panelMeta.rawName = set.name
+                panelMeta.name = 'panel' + pad(n, 2)
+                panelMeta.id = n
                 metadata.panels.push(panelMeta)
+
                 set.visible = false
 
                 spritesExported += (panelMeta.sprites || []).length || 1
                 panelsExported++
             }
 
+            metadata.panels.sort(function (a, b) { return a.id - b.id; })
 
             var metaPath = dir + '/metadata.json'
             var metaFile = new File(metaPath)
@@ -118,21 +140,28 @@
 
     var _exportPanel = function(doc, dir, set) {
         
-        var layers = set.layers;
+        var layers = set.layers
         var visibility = []
 
         var metadata = {
-            name: set.name,
-            sprites: [],
+            sprites: []
         }
 
         try {
 
             var spriteCount = 0
+            var spriteSeen = {}
+
             for (var i = 0; i < layers.length; i++) {
                 var layer = layers[i]
-                if (/^[Ss]prite[0-9]+$/.test(layer.name)) {
+                var m = /^[Ss]prite([0-9])+$/.exec(layer.name)
+                if (m) {
                     spriteCount++;
+                    var n = parseInt(m[1], 10)
+                    if (spriteSeen[n]) {
+                        throw "Multiple \"sprite" + pad(n, 2) + "\" in " + set.name
+                    }
+                    spriteSeen[n] = true
                 }
             }
 
@@ -149,17 +178,27 @@
                 }
 
                 for (var i = 0; i < layers.length; i++) {
+                    
                     var layer = layers[i]
-                    layer.visible = true;
+                    layer.visible = true
+                    
                     var spriteMeta = _exportSprite(doc, dir, set.name + '_' + layer.name)
-                    spriteMeta.name = layer.name
+                    spriteMeta.rawIndex = i
+                    spriteMeta.rawName = layer.name
+                    var n = parseInt(/(\d+)$/.exec(layer.name)[1], 10)
+                    spriteMeta.name = "sprite" + pad(n, 2)
+                    spriteMeta.id = n
                     metadata.sprites.push(spriteMeta)
+
                     layer.visible = false;
                 }
 
             } else {
                 var panelMeta = _exportSprite(doc, dir, set.name)
-                panelMeta.name = null;
+                panelMeta.rawIndex = 0
+                panelMeta.rawName = null
+                panelMeta.name = "sprite01"
+                panelMeta.id = 1
                 metadata.sprites.push(panelMeta)
             }
 
@@ -171,6 +210,9 @@
 
         }
 
+        // Order the sprites.
+        metadata.sprites.sort(function (a, b) { return a.id - b.id; })
+
         return metadata
 
     }
@@ -181,14 +223,17 @@
 
         var px = function(x) { return x.as('px') }
 
-        var width = px(doc.width)
-        var height = px(doc.height)
+        var width = doc.width.as('px')
+        var height = doc.height.as('px')
         doc.trim(TrimType.TRANSPARENT, true, true, false, false)
-        var top = height - px(doc.height)
-        var left = width - px(doc.width)
+        var top = height - doc.height.as('px')
+        var left = width - doc.width.as('px')
         doc.trim(TrimType.TRANSPARENT, false, false, true, true)
-        var bottom = height - top - px(doc.height)
-        var right = width - left - px(doc.width)
+        var bottom = height - top - doc.height.as('px')
+        var right = width - left - doc.width.as('px')
+
+        width = doc.width.as('px')
+        height = doc.height.as('px')
 
         var options = new PNGSaveOptions()
         options.compression = 1;
@@ -204,6 +249,8 @@
 
         return {
             fileName: pngName,
+            width:    Math.round(width),
+            height:   Math.round(height),
             top:      Math.round(top),
             right:    Math.round(right),
             bottom:   Math.round(bottom),
