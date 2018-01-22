@@ -8,8 +8,31 @@
     <link rel="stylesheet" href="css/lib/bootstrap-3.3.7.min.css">
     <link rel="stylesheet" href="css/main.css">
 
+    <script>
+        // CEP 8 uses a new version of node, which uses some global variables,
+        // which jQuery and other libraries detect... so we move them out of
+        // the way before loading them.
+        if (typeof module === 'object') {
+            window.module = module;
+            module = undefined;
+        }
+        if (typeof exports === 'object') {
+            window.exports = exports
+            exports = undefined
+        }
+    </script>
+
     <script src="js/lib/CSInterface-4.0.0.js"></script>
     <script src="js/lib/jquery-3.2.1.min.js"></script>
+
+    <script>
+        if (window.module) {
+            module = window.module;
+        }
+        if (window.exports) {
+            exports = window.exports;
+        }
+    </script>
 
     <script src="js/main.js"></script>
     <!-- <script src="js/debug.js"></script> -->
